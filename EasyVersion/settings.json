@@ -1,0 +1,7 @@
+{
+  "username": "postgres",
+  "password": "***",
+  "ip_address": "127.0.0.1",
+  "port": 5432,
+  "database": "defi2"
+}
