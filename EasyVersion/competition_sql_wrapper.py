@@ -119,7 +119,7 @@ class CompetitionSQLWrapper:
 
         Returns:
             pk:
-            
+
         """
         try:
             pk = []
