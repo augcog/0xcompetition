@@ -2,12 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0aaaea8c-216a-4155-a5fe-d806ed896f03" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/EasyVersion/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FastAPI/settings.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EasyVersion/competition_sql_wrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/EasyVersion/competition_sql_wrapper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EasyVersion/settings.json" beforeDir="false" afterPath="$PROJECT_DIR$/EasyVersion/settings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EasyVersion/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/EasyVersion/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FastAPI/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/FastAPI/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>

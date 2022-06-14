@@ -10,6 +10,7 @@ app = FastAPI()
 def index():
     return {"message": "Hello World"}
 
+
 @app.get('/tables/')
 def greet_name(name: str):
     fp = "./settings.json"
