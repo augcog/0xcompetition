@@ -1,23 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="0aaaea8c-216a-4155-a5fe-d806ed896f03" name="Changes" comment="">
+    <list default="true" id="0676d109-770d-47bb-aa06-703ffaf8b517" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/0xcompetition.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EasyVersion/competition_sql_wrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/EasyVersion/competition_sql_wrapper.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/EasyVersion/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/EasyVersion/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FastAPI/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/FastAPI/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
-  </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Python Script" />
-      </list>
-    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -25,34 +23,29 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectId" id="2ALwqPser3JT1Ei5JfuMgcKQtgD" />
+  <component name="ProjectId" id="2AgWkNzdeFamcHa2Kmh5Qe0KC8D" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Winson/Documents/GitHub/0xcompetition/EasyVersion/main.py&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "C:/Users/Winson/Documents/GitHub/0xcompetition2/EasyVersion/main.py",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
-}</component>
-  <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Winson\Documents\GitHub\0xcompetition" />
-    </key>
-  </component>
+}]]></component>
   <component name="RunManager">
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python">
-      <module name="0xcompetition" />
+    <configuration name="EasyVersion/main" type="PythonConfigurationType" factoryName="Python">
+      <module name="0xcompetition2" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="C:\Users\Winson\Documents\GitHub\0xcompetition\venv\Scripts\python.exe" />
+      <option name="SDK_HOME" value="C:\Users\Winson\Documents\GitHub\0xcompetition2\venv\Scripts\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/EasyVersion" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -70,11 +63,11 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="0aaaea8c-216a-4155-a5fe-d806ed896f03" name="Changes" comment="" />
-      <created>1654802363995</created>
+      <changelist id="0676d109-770d-47bb-aa06-703ffaf8b517" name="Changes" comment="" />
+      <created>1655431850459</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1654802363995</updated>
+      <updated>1655431850459</updated>
     </task>
     <servers />
   </component>

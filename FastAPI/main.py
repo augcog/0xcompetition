@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 from EasyVersion import competition_sql_wrapper
-import json
 
 
 app = FastAPI()
+fp = "./settings.json"
+wrapper = competition_sql_wrapper.CompetitionSQLWrapper(file_path=fp)
 
 
 @app.get('/')
@@ -12,8 +13,40 @@ def index():
 
 
 @app.get('/tables/')
-def greet_name(name: str):
-    fp = "./settings.json"
-    wrapper = competition_sql_wrapper.CompetitionSQLWrapper(file_path=fp)
-    tables = json.dumps(wrapper.list_tables())
-    return {"tables": tables}
+def list_tables():
+    return {"tables": wrapper.list_tables()}
+
+
+@app.get('/tables/{name}/columns/')
+def list_columns(name: str):
+    return {"columns": wrapper.list_columns(name)}
+
+
+@app.get('/tables/{name}/indexes/')
+def list_indexes(name: str):
+    return {"indexes": wrapper.list_indexes(name)}
+
+
+@app.get('/tables/{name}/primarykey/')
+def get_primary_key_info(name: str):
+    return {"primary key": wrapper.get_primary_key_info(name)}
+
+
+@app.get('/tables/{name}/foreignkey/')
+def get_foreign_keys_info(name: str):
+    return {"primary key": wrapper.get_foreign_keys_info(name)}
+
+
+@app.get('/tables/{name}/items/')
+def query(name: str, skip: int = 0, limit: int = 10, order_by: str | None = None, select: str = "*", from_address: str | None = None):
+    query_str = "SELECT " + select + " FROM " + name #+ " SKIP " + str(skip)
+    if from_address is not None:
+        query_str += (" WHERE from_address = \'" + from_address + "\'")
+    if order_by is not None:
+        query_str += (" ORDER BY " + order_by)
+    query_str += " LIMIT " + str(limit) + ";"
+    return {"items": wrapper.query(query_str)}
+
+#Skip, limit, sort (asc/desc), txn_hash?, start/end date, etc
+
+

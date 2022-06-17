@@ -9,4 +9,6 @@ if __name__ == "__main__":
     print(wrapper.list_tables())
     print(wrapper.list_columns("transactions"))
     print(wrapper.list_indexes("transactions"))
+    print(wrapper.get_primary_key_info("transactions"))
+    print(wrapper.query("SELECT hash FROM transactions WHERE from_address=\'0x804d39f546c5164af7612c3dca3683150e55bb78\' LIMIT 10;"))
 

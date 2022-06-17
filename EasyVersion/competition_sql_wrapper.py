@@ -55,10 +55,14 @@ class CompetitionSQLWrapper:
 
         """
         results = pd.read_sql_query(query, self.db_connection)
+
+        #for item in results:
+            #if item is not str:
+                #temp = str(item)
+                #item = temp
         # TODO: implement column name parsing
         df = pd.DataFrame(results, columns=None)
-
-        return df
+        return df #pd.DataFrame.to_json(df)
 
     def list_tables(self):
         """
