@@ -1,7 +1,0 @@
-{
-  "username": "username",
-  "password": "password",
-  "ip_address": "ip",
-  "port": 5432,
-  "database": "databaseEASY"
-}
