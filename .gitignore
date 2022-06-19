@@ -128,5 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-0xcompetition2/FastAPI/settings.json
-0xcompetition2/EasyVersion/settings.json
+FastAPI/settings.json
+/EasyVersion/settings.json
