@@ -39,7 +39,7 @@ def get_foreign_keys_info(name: str):
 
 @app.get('/tables/{name}/items/')
 def query(name: str, skip: int = 0, limit: int = Query(default=10, lte=100), order_by: str | None = None, select: str = "*", from_address: str | None = None):
-    query_str = "SELECT " + select + " FROM " + name #+ " SKIP " + str(skip)
+    query_str = "SELECT " + select + " SKIP " + str(skip*limit) + " FROM " + name
     if from_address is not None:
         query_str += (" WHERE from_address = \'" + from_address + "\'")
     if order_by is not None:
