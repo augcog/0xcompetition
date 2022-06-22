@@ -57,6 +57,8 @@ def list_tables():
 def query(q: str):
     """
      return query if query q is correct SQL format.
+
+     Example: SELECT * FROM transactions WHERE from_address='0x804d39f546c5164af7612c3dca3683150e55bb78' ORDER BY transaction_index DESC
     NOTE:
         this is definitely a security breach, to allow foreign users to submit queries that are unfiltered.
     :param q: query to perform
