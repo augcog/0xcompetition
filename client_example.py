@@ -6,4 +6,4 @@ params = {
 ip = "128.32.43.220"
 r = requests.get(f"http://{ip}:8000/query", params=params)
 print(r.status_code)
-print(r.json()["result"]["to_address"]['0'])
+print(r.json()["result"])
