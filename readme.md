@@ -14,3 +14,8 @@
 ## Testing
 Run `pytest -c pytest_env.ini --cov=v1`, revise the `ini` file as needed
 
+## Deploy
+Run on desired serer
+```
+nohup uvicorn v1.api:app  --host 0.0.0.0 --port 8000 > nohup.out & echo $! > process.txt
+```
