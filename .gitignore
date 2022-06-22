@@ -131,3 +131,4 @@ dmypy.json
 v1/settings.json
 /EasyVersion/settings.json
 **settings.json
+.idea
