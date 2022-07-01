@@ -17,6 +17,7 @@ wrapper = CompetitionSQLWrapper(file_path=fp)
 
 @app.get('/')
 def index():
+    #entering the url with no path will redirect you to the OpenAPI documentation
     return RedirectResponse(url="/docs/", status_code=303)
 
 
@@ -29,7 +30,7 @@ def list_columns(name: str):
         raise HTTPException(status_code=500, detail=f"Internal Server Error: Table name \'{e}\' not found!")
 
 
-@app.get('/tables/{name}/indexes/')
+@app.get('/tables/{name}/indexes/', response_model=Indexes)
 def list_indexes(name: str):
     # TODO: @Winson, add response_model for validation
     # TODO: @Winson, handle error
@@ -39,7 +40,7 @@ def list_indexes(name: str):
         raise HTTPException(status_code=500, detail=f"Internal Server Error: Table name \'{e}\' not found!")
 
 
-@app.get('/tables/{name}/primarykey/')
+@app.get('/tables/{name}/primarykey/', response_model=PrimaryKeys)
 def get_primary_key_info(name: str):
     # TODO: @Winson, add response_model for validation
     # TODO: @Winson, handle error
@@ -49,7 +50,7 @@ def get_primary_key_info(name: str):
         raise HTTPException(status_code=500, detail=f"Internal Server Error: Table name \'{e}\' not found!")
 
 
-@app.get('/tables/{name}/foreignkey/')
+@app.get('/tables/{name}/foreignkey/', response_model=ForeignKeys)
 def get_foreign_keys_info(name: str):
     # TODO: @Winson, add response_model for validation
     # TODO: @Winson, handle error
@@ -59,7 +60,7 @@ def get_foreign_keys_info(name: str):
         raise HTTPException(status_code=500, detail=f"Internal Server Error: Table name \'{e}\' not found!")
 
 
-@app.get('/tables')
+@app.get('/tables', response_model=Table)
 def list_tables():
     tables = wrapper.list_tables()
     return Table(tables=tables)

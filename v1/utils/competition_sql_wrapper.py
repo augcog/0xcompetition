@@ -22,6 +22,8 @@ class CompetitionSQLWrapper:
         Returns:
 
         """
+
+        #opening json file with the login credentials
         try:
             assert file_path is not None, "Server config path is None"
             assert Path(file_path).exists(), f"File path [{file_path}] does not exist"
@@ -32,12 +34,14 @@ class CompetitionSQLWrapper:
         except OSError:
             raise OSError(f"File not found. Check the name of the file: {file_path}")
 
+        #obtaining login credentials
         username = data['username']
         password = data['password']
         ip_address = data['ip_address']
         port = data['port']
         database = data['database']
 
+        #create the Engine used to interact with the database
         self.alchemy_engine = create_engine(
             f"postgresql+pg8000://{username}:{password}@{ip_address}:{port}/{database}",
             pool_recycle=3600,
@@ -45,6 +49,7 @@ class CompetitionSQLWrapper:
         )
         self.inspector = inspect(self.alchemy_engine)
 
+        #establish a connection to the desired database with the Engine
         try:
             self.db_connection = self.alchemy_engine.connect()
             logging.info("Connection successful.")
@@ -64,7 +69,6 @@ class CompetitionSQLWrapper:
 
         """
         results = pd.read_sql_query(query, self.db_connection)
-        # TODO: implement column name parsing
         df = pd.DataFrame(results, columns=None)
         return df #pd.DataFrame.to_json(df)
 
@@ -85,10 +89,10 @@ class CompetitionSQLWrapper:
         """
         Creates and prints out a list of columns in a specific table
         Args:
-            table_name:
+            table_name: the name of the desired table in the database for information to be returned from
 
         Returns:
-            cols
+            cols: a list of column names from the given table
 
         """
         try:
@@ -104,10 +108,10 @@ class CompetitionSQLWrapper:
         """
         Creates and prints out a list of indices in a specific table
         Args:
-            table_name:
+            table_name: the name of the desired table in the database for information to be returned from
 
         Returns:
-            indexes:
+            indexes: a list of index names from the given table
 
         """
         try:
@@ -123,10 +127,10 @@ class CompetitionSQLWrapper:
         """
         Creates and prints out a list of indices in a specific table
         Args:
-            table_name:
+            table_name: the name of the desired table in the database for information to be returned from
 
         Returns:
-            pk:
+            pk: a list of the one primary key from the given table
 
         """
         try:
@@ -142,10 +146,10 @@ class CompetitionSQLWrapper:
         """
         Creates and prints out a list of indices in a specific table
         Args:
-            table_name:
+            table_name: the name of the desired table in the database for information to be returned from
 
         Returns:
-            fk:
+            fk: a list of the foreign keys from the given table
 
         """
         try:
