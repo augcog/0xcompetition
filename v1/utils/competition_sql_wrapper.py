@@ -1,6 +1,11 @@
 import pandas as pd
 import json
 from sqlalchemy import create_engine, inspect
+import logging
+from pathlib import Path
+logging.basicConfig(format=f'%(levelname)s - {__name__} - %(asctime)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    level=logging.INFO)
 
 
 class CompetitionSQLWrapper:
@@ -10,7 +15,7 @@ class CompetitionSQLWrapper:
         Takes a file path, validate whether this file path is correct or not, and connect to the database
 
         raise file not found error if file path is wrong
-        raise Connection\error if connection fails.
+        raise Connection error if connection fails.
         Args:
             file_path:
 
@@ -18,12 +23,14 @@ class CompetitionSQLWrapper:
 
         """
         try:
+            assert file_path is not None, "Server config path is None"
+            assert Path(file_path).exists(), f"File path [{file_path}] does not exist"
             with open(file_path) as f:
                 data = json.load(f)
                 f.close()
-                print("File path has been accepted.")
+                logging.debug("File path has been accepted.")
         except OSError:
-            raise OSError("File not found. Check the name of the file.")
+            raise OSError(f"File not found. Check the name of the file: {file_path}")
 
         username = data['username']
         password = data['password']
@@ -40,7 +47,7 @@ class CompetitionSQLWrapper:
 
         try:
             self.db_connection = self.alchemy_engine.connect()
-            print("Connection successful.")
+            logging.info("Connection successful.")
         except ConnectionError:
             raise ConnectionError("Failed to connect!!!")
 
@@ -48,6 +55,8 @@ class CompetitionSQLWrapper:
         """
         Using a user SQL statement input, this function will use the database
         connection to execute the statement and return a pandas dataframe
+        @TODO Becks -- figure out how to do SQL query sanity check, maybe there's some package that can help us do that?
+
         Args:
             query:
 
@@ -55,11 +64,6 @@ class CompetitionSQLWrapper:
 
         """
         results = pd.read_sql_query(query, self.db_connection)
-
-        #for item in results:
-            #if item is not str:
-                #temp = str(item)
-                #item = temp
         # TODO: implement column name parsing
         df = pd.DataFrame(results, columns=None)
         return df #pd.DataFrame.to_json(df)
@@ -148,7 +152,6 @@ class CompetitionSQLWrapper:
             fk = []
             for results in self.inspector.get_foreign_keys(table_name):
                 fk.append(results)
-            print(fk)
         except NameError:
             raise NameError("Table name, " + table_name + " is not valid!")
 
