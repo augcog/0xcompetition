@@ -23,7 +23,6 @@ def index():
 
 @app.get('/tables/{name}/columns/', response_model=Columns)
 def list_columns(name: str):
-    # TODO: @Winson, handle error
     try:
         return Columns(table_name=name, columns=wrapper.list_columns(table_name=name))
     except Exception as e:
@@ -32,8 +31,6 @@ def list_columns(name: str):
 
 @app.get('/tables/{name}/indexes/', response_model=Indexes)
 def list_indexes(name: str):
-    # TODO: @Winson, add response_model for validation
-    # TODO: @Winson, handle error
     try:
         return Indexes(table_name=name, indexes=wrapper.list_indexes(name))
     except Exception as e:
@@ -42,8 +39,6 @@ def list_indexes(name: str):
 
 @app.get('/tables/{name}/primarykey/', response_model=PrimaryKeys)
 def get_primary_key_info(name: str):
-    # TODO: @Winson, add response_model for validation
-    # TODO: @Winson, handle error
     try:
         return PrimaryKeys(table_name=name, primary_keys=wrapper.get_primary_key_info(name))
     except Exception as e:
@@ -52,8 +47,6 @@ def get_primary_key_info(name: str):
 
 @app.get('/tables/{name}/foreignkey/', response_model=ForeignKeys)
 def get_foreign_keys_info(name: str):
-    # TODO: @Winson, add response_model for validation
-    # TODO: @Winson, handle error
     try:
         return ForeignKeys(table_name=name, foreign_keys=wrapper.get_foreign_key_info(name))
     except Exception as e:
