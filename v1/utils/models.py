@@ -19,7 +19,7 @@ class Indexes(BaseModel):
 
 class PrimaryKeys(BaseModel):
     table_name: str
-    primary_keys: List[str] = []
+    primary_key: List[str] = []
 
 
 class ForeignKeys(BaseModel):

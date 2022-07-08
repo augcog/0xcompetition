@@ -1,6 +1,6 @@
 from typing import Optional, Union
 from fastapi import FastAPI, Depends, Query, HTTPException
-from v1.utils.competition_sql_wrapper import CompetitionSQLWrapper
+from v1.utils.block_db_sql_wrapper import BlockDBSQLWrapper
 from fastapi.responses import RedirectResponse
 import os
 from v1.utils.models import *
@@ -12,7 +12,7 @@ logging.basicConfig(format=f'%(levelname)s - {__name__} - %(asctime)s - %(messag
                     level=logging.INFO)
 app = FastAPI()
 fp = os.getenv("COMP_SETTING")
-wrapper = CompetitionSQLWrapper(file_path=fp)
+wrapper = BlockDBSQLWrapper(file_path=fp)
 
 
 @app.get('/')
@@ -40,15 +40,15 @@ def list_indexes(name: str):
 @app.get('/tables/{name}/primarykey/', response_model=PrimaryKeys)
 def get_primary_key_info(name: str):
     try:
-        return PrimaryKeys(table_name=name, primary_keys=wrapper.get_primary_key_info(name))
+        return PrimaryKeys(table_name=name, primary_key=wrapper.get_primary_key_info(name))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: Table name \'{e}\' not found!")
 
 
-@app.get('/tables/{name}/foreignkey/', response_model=ForeignKeys)
+@app.get('/tables/{name}/foreignkeys/', response_model=ForeignKeys)
 def get_foreign_keys_info(name: str):
     try:
-        return ForeignKeys(table_name=name, foreign_keys=wrapper.get_foreign_key_info(name))
+        return ForeignKeys(table_name=name, foreign_keys=wrapper.get_foreign_keys_info(name))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: Table name \'{e}\' not found!")
 

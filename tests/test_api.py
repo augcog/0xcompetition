@@ -22,6 +22,26 @@ def test_list_columns():
                                            "receipt_effective_gas_price"]}
 
 
+def test_list_indexes():
+    response = client.get("/tables/transactions/indexes/")
+    assert response.json() == {"table_name": "transactions",
+                               "indexes": ["transactions_block_timestamp_index",
+                                           "transactions_from_address_block_timestamp_index",
+                                           "transactions_to_address_block_timestamp_index"]}
+
+
+def test_get_primary_key_info():
+    response = client.get("/tables/transactions/primarykey/")
+    assert response.json() == {"table_name": "transactions",
+                               "primary_key": ["constrained_columns", "name"]}
+
+
+def test_get_foreign_key_info():
+    response = client.get("/tables/transactions/foreignkeys/")
+    assert response.json() == {"table_name": "transactions",
+                               "foreign_keys": []}
+
+
 def test_query():
     params = {
         "q": "SELECT * FROM transaction WHERE from_address='0x804d39f546c5164af7612c3dca3683150e55bb78' ORDER BY transaction_index DESC"
