@@ -8,7 +8,7 @@ logging.basicConfig(format=f'%(levelname)s - {__name__} - %(asctime)s - %(messag
                     level=logging.INFO)
 
 
-class CompetitionSQLWrapper:
+class BlockDBSQLWrapper:
 
     def __init__(self, file_path: str):
         """
@@ -68,6 +68,8 @@ class CompetitionSQLWrapper:
         Returns:
 
         """
+        assert query.count(';') > 1, "Please check query format!"
+
         results = pd.read_sql_query(query, self.db_connection)
         df = pd.DataFrame(results, columns=None)
         return df #pd.DataFrame.to_json(df)
