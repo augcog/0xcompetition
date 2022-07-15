@@ -14,7 +14,7 @@ class Columns(BaseModel):
 
 class Indexes(BaseModel):
     table_name: str
-    columns: List[str] = []
+    indexes: List[str] = []
 
 
 class PrimaryKeys(BaseModel):

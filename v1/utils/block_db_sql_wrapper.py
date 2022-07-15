@@ -53,7 +53,7 @@ class BlockDBSQLWrapper:
         try:
             self.db_connection = self.alchemy_engine.connect()
             logging.info("Connection successful.")
-        except ConnectionError:
+        except Exception:
             raise ConnectionError("Failed to connect!!!")
 
     def query(self, query: str) -> pd.DataFrame:
@@ -68,7 +68,9 @@ class BlockDBSQLWrapper:
         Returns:
 
         """
-        assert query.count(';') > 1, "Please check query format!"
+        assert query.count(';') < 2, "Please check query format!"
+        assert "--" not in query, "Comment symbol \'--\' not permitted!"
+        # check for keywords
 
         results = pd.read_sql_query(query, self.db_connection)
         df = pd.DataFrame(results, columns=None)
@@ -102,7 +104,7 @@ class BlockDBSQLWrapper:
             for results in self.inspector.get_columns(table_name):
                 cols.append(results.get('name'))
         except NameError:
-            raise NameError("Table name, " + table_name + " is not valid!")
+            raise NameError("Table name " + table_name + " is not valid!")
 
         return cols
 
@@ -121,7 +123,7 @@ class BlockDBSQLWrapper:
             for results in self.inspector.get_indexes(table_name):
                 indexes.append(results.get('name'))
         except NameError:
-            raise NameError("Table name, " + table_name + " is not valid!")
+            raise NameError("Table name " + table_name + " is not valid!")
 
         return indexes
 
@@ -140,7 +142,7 @@ class BlockDBSQLWrapper:
             for results in self.inspector.get_pk_constraint(table_name):
                 pk.append(results)
         except NameError:
-            raise NameError("Table name, " + table_name + " is not valid!")
+            raise NameError("Table name " + table_name + " is not valid!")
 
         return pk
 
@@ -159,6 +161,6 @@ class BlockDBSQLWrapper:
             for results in self.inspector.get_foreign_keys(table_name):
                 fk.append(results)
         except NameError:
-            raise NameError("Table name, " + table_name + " is not valid!")
+            raise NameError("Table name " + table_name + " is not valid!")
 
         return fk
