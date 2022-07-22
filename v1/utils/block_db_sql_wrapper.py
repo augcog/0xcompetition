@@ -60,12 +60,12 @@ class BlockDBSQLWrapper:
         """
         Using a user SQL statement input, this function will use the database
         connection to execute the statement and return a pandas dataframe
-        @TODO Becks -- figure out how to do SQL query sanity check, maybe there's some package that can help us do that?
 
         Args:
-            query:
+            query: a SQL statement
 
         Returns:
+            df: a pandas dataframe with the information returned by the query
 
         """
         assert query.count(';') < 2, "Please check query format!"
