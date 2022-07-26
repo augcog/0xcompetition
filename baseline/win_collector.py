@@ -45,56 +45,22 @@ class DataCollector:
 
     def get_illicit_account_addresses(self):
         '''
-        This method gets the illictit account addresses via the EtherscamDB API
-        and a supplementary JSON File
+        This method gets the illictit account addresses via a supplementary JSON File
 
         '''
 
-        # Make the request, check + convert to JSON
-        response = requests.get("https://etherscamdb.info/api/scams/")
-        if response.status_code == 200:
-            response = response.json()
-            no_of_scams = len(response['result'])
-            scam_id, scam_name, scam_status, scam_category, addresses = ([] for i in range(5))
+        # JSON File
+        address_darklist = requests.get(
+            'https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/src/addresses/addresses-darklist.json').json()
+        addresses = []
 
-            logging.debug("Starting retrieval of scams from EtherscamDB")
+        for item in address_darklist:
+            addresses.append(item['address'])
 
-            for scam in range(no_of_scams):
-                if 'addresses' in response['result'][scam]:
-                    for i in response['result'][scam]['addresses']:
-                        if i[:2] != '0x':
-                            continue
-                        addresses.append(i)
+        logging.debug("Number of illegal addresses: ", len(address_darklist))
+        logging.debug("Number of unique illegal addresses in JSON file: ", len(np.unique(addresses)))
 
-                        scam_id.append(response['result'][scam]['id'])
-                        scam_name.append(response['result'][scam]['name'])
-                        scam_status.append(response['result'][scam]['status'])
-
-                        if 'category' in response['result'][scam]:
-                            scam_category.append(response['result'][scam]['category'])
-                        else:
-                            scam_category.append('Null')
-            # Basics Stats on the dataset
-            logging.debug("file number of illicit accounts: ", len(addresses))
-            logging.debug("Unique illicit accounts: ", len(np.unique(addresses)))
-
-            # JSON File
-            address_darklist = requests.get(
-                'https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/src/addresses/addresses-darklist.json').json()
-            addresses_2 = []
-
-            for item in address_darklist:
-                addresses_2.append(item['address'])
-
-            logging.debug("Number of illegal addresses: ", len(address_darklist))
-            logging.debug("Number of unique illegal addresses in JSON file: ", len(np.unique(addresses_2)))
-
-            all_addresses = []
-            all_addresses = np.concatenate((addresses, addresses_2), axis=None)
-            all_addresses = np.unique(np.char.lower(all_addresses))
-
-            logging.debug("Final number of unique Addresses: ", len(np.unique(all_addresses)))
-            return all_addresses
+        return np.array(addresses)
 
     def main(self, clean_addresses=True, name='clean_addresses', inference_addresses=[]):
         """
@@ -199,8 +165,8 @@ class DataCollector:
         Returns:
         ERC20_contract_tnx_fields = different features based on token transactions
         """
-        URL = "http://api.etherscan.io/api?module=account&action=tokentx&address={address}" \
-              "&startblock=0&endblock=999999999&sort=asc&apikey=1BDEBF8IZY2H7ENVHPX6II5ZHEBIJ8V33N".format(
+        Uurl = "http://128.32.43.220:8000/query?q=SELECT%20*%20FROM%20transactions%20WHERE%20from_address=%27{address}" \
+              "%27%20OR%20to_address=%27{address}%27%20LIMIT%205".format(
             address=address)
 
         r = requests.get(url=URL)
