@@ -17,16 +17,14 @@ class DataCollector:
     This is the base class for collecting the required data. The data is obtained
     via REST API's
 
-    This class obtains features for clean ehtereum accounts addresses, as well
-    as scam ethereum account addresses, therefore the main() function must be ran twice
-    to output two datasets
     """
 
     def __init__(self, inference=False):
         # Specify if the data we are obtaining is for Inference or not
         self.inference = inference
 
-    def get_clean_account_adresses(self):
+
+    def get_clean_account_addresses(self):
         '''
         This method gets the clean account addresses
         '''
@@ -42,6 +40,7 @@ class DataCollector:
 
         # Return a numpy array of addresses obtained
         return np.array(clean_account_adresses['Address'])
+
 
     def get_illicit_account_addresses(self):
         '''
@@ -62,38 +61,52 @@ class DataCollector:
 
         return np.array(addresses)
 
-    def main(self, clean_addresses=True, name='clean_addresses', inference_addresses=[]):
+
+    def main(self, name='clean_addresses', inference_addresses=[]):
         """
         Main function of the DataCollector Class.
         This function links together all the methods and processes together
 
         Parameters:
-        clean_address = whether or not to obtain clean or illicit addresses
-        inference_addresses = if inference=True, then the list of addresses to fetch data from
         name = the name of the csv file to be saved
+        inference_addresses = if inference=True, then the list of addresses to fetch data from
         """
         addresses = []
         name = name
         flag = 0
         if self.inference == False:
-            if clean_addresses == True:
-                addresses = self.get_clean_account_adresses()
-                flag = 0
-            else:
-                addresses = self.get_illicit_account_addresses()
-                flag = 1
+            cleans = self.get_clean_account_addresses()
+            illicits = self.get_illicit_account_addresses()
         else:
             name = 'inference'
             addresses = inference_addresses
         index = 1
-        pbar = tqdm(total=len(addresses))
-        for address in addresses:
+
+        pbar = tqdm(total=len(cleans)+len(illicits))
+
+        # writing information for clean address
+        for address in cleans:
             # Loop through addresses, and get data for each address
             normal_tnxs = self.normal_transactions(index, address, flag=flag)
-            token_transfer_tnxs = self.token_transfer_transactions(address)
             try:
                 # Save obtained data to csv file
-                all_tnxs = np.concatenate((normal_tnxs, token_transfer_tnxs), axis=None)
+                all_tnxs = normal_tnxs
+                with open(r'./{}.csv'.format(name), 'a', newline="") as f:
+                    writer = csv.writer(f, delimiter=',')
+                    writer.writerow(all_tnxs)
+                    logging.debug(all_tnxs)
+                index += 1
+                pbar.update(1)
+            except:
+                continue
+
+        # writing information for illicit address
+        for address in illicits:
+            # Loop through addresses, and get data for each address
+            normal_tnxs = self.normal_transactions(index, address, flag=flag)
+            try:
+                # Save obtained data to csv file
+                all_tnxs = normal_tnxs
                 with open(r'./{}.csv'.format(name), 'a', newline="") as f:
                     writer = csv.writer(f, delimiter=',')
                     writer.writerow(all_tnxs)
@@ -109,28 +122,7 @@ class DataCollector:
             df = pd.read_csv('inference.csv', header=None)
             return df
 
-    def account_balance(self, address):
-        """
-        Function to obtain account balance
-
-        Parameters:
-        address: the address of an account
-
-        Returns:
-        balance: balance of given address
-        """
-        url = "https://api.etherscan.io/api?module=account&action=balance&address={address}" \
-              "&tag=latest&apikey=1BDEBF8IZY2H7ENVHPX6II5ZHEBIJ8V33N".format(address=address)
-
-        r = requests.get(url=url)
-        data = r.json()
-        balance = 0
-
-        if data['status'] != 0:
-            balance = int(data['result']) / 1000000000000000000
-
-        return balance
-
+    # TODO: may be an unnecessary function
     def get_total_number_of_normal_transactions(self, address):
         """
         Function to obtain total number of normal transactions
@@ -155,119 +147,6 @@ class DataCollector:
 
         return num_normal_transactions
 
-    def token_transfer_transactions(self, address):
-        """
-        Function to obtain data about an account's token transfer transactions
-
-        Parameters:
-        address: the address of an account
-
-        Returns:
-        ERC20_contract_tnx_fields = different features based on token transactions
-        """
-        Uurl = "http://128.32.43.220:8000/query?q=SELECT%20*%20FROM%20transactions%20WHERE%20from_address=%27{address}" \
-              "%27%20OR%20to_address=%27{address}%27%20LIMIT%205".format(
-            address=address)
-
-        r = requests.get(url=URL)
-        data = r.json()
-        timestamp, recipients, timeDiffSent, timeDiffReceive, timeDiffContractTnx, receivedFromAddresses, receivedFromContractAddress, \
-        sentToAddresses, sentToContractAddresses, sentToContracts, valueSent, valueReceived, valueSentContracts, \
-        tokenReceivedName, tokenReceivedSymbol, tokenSentName, tokenSentSymbol, valueReceivedContract, sentToAddressesContract, \
-        receivedFromAddressesContract, tokenSentNameContract, tokenSentSymbolContract = ([] for i in range(22))
-
-        receivedTransactions, sentTransactions, minValReceived, tokenContractTnx, \
-        maxValReceived, avgValReceived, minValSent, maxValSent, avgValSent, minValSentContract, \
-        maxValSentContract, avgValSentContract = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-        ERC20_contract_tnx_fields = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                     0, 0, 0, 0]
-        if data['status'] != '0':
-            for tokenTnx in range(len(data['result'])):
-                timestamp.append(data['result'][tokenTnx]['timeStamp'][0])
-
-                # if receiving
-                if data['result'][tokenTnx]['to'] == address:
-                    receivedTransactions = receivedTransactions + 1
-                    receivedFromAddresses.append(data['result'][tokenTnx]['from'])
-                    receivedFromContractAddress.append(data['result'][tokenTnx]['contractAddress'])
-                    valueReceived.append(int(data['result'][tokenTnx]['value']) / 1000000000000000000)
-
-                    if data['result'][tokenTnx]['tokenName'] is not None:
-                        tName = data['result'][tokenTnx]['tokenName']
-                        tName.translate(str.maketrans('', '', string.punctuation))
-                        tokenReceivedName.append(tName.encode("utf-8"))
-                    tokenReceivedSymbol.append(data['result'][tokenTnx]['tokenSymbol'])
-                    if receivedTransactions > 0:
-                        timeDiffReceive.append(
-                            (datetime.utcfromtimestamp(int(timestamp[tokenTnx])) - datetime.utcfromtimestamp(
-                                int(timestamp[tokenTnx - 1]))).total_seconds() / 60)
-
-                # if sending
-                if data['result'][tokenTnx]['from'] == address:
-                    sentTransactions = sentTransactions + 1
-                    sentToAddresses.append(data['result'][tokenTnx]['to'])
-                    sentToContractAddresses.append(data['result'][tokenTnx]['contractAddress'])
-                    valueSent.append(int(data['result'][tokenTnx]['value']) / 1000000000000000000)
-                    if data['result'][tokenTnx]['tokenName'] is not None:
-                        tName = data['result'][tokenTnx]['tokenName']
-                        tName.translate(str.maketrans('', '', string.punctuation))
-                        tokenSentName.append(tName.encode("utf-8"))
-
-                    tokenSentSymbol.append(data['result'][tokenTnx]['tokenSymbol'])
-                    if sentTransactions > 0:
-                        timeDiffSent.append(
-                            (datetime.utcfromtimestamp(int(timestamp[tokenTnx])) - datetime.utcfromtimestamp(
-                                int(timestamp[tokenTnx - 1]))).total_seconds() / 60)
-
-                # if a contract
-                if data['result'][tokenTnx]['contractAddress'] == address:
-                    tokenContractTnx = tokenContractTnx + 1
-                    valueReceivedContract.append(int(data['result'][tokenTnx]['value']) / 1000000000000000000)
-                    sentToAddressesContract.append(data['result'][tokenTnx]['to'])
-                    receivedFromAddressesContract.append(data['result'][tokenTnx]['from'])
-                    if data['result'][tokenTnx]['tokenName'] is not None:
-                        tokenSentNameContract.append((data['result'][tokenTnx]['tokenName']).encode("utf-8"))
-                    tokenSentSymbolContract.append(data['result'][tokenTnx]['tokenSymbol'])
-                    if tokenContractTnx > 0:
-                        timeDiffContractTnx.append(
-                            (datetime.utcfromtimestamp(int(timestamp[tokenTnx])) - datetime.utcfromtimestamp(
-                                int(timestamp[tokenTnx - 1]))).total_seconds() / 60)
-
-            totalTnx = receivedTransactions + sentTransactions + tokenContractTnx
-            totalEtherRec = np.sum(valueReceived)
-            totalEtherSent = np.sum(valueSent)
-            totalEtherContract = np.sum(valueReceivedContract)
-            uniqSentAddr, uniqRecAddr = self.uniq_addresses(sentToAddresses, receivedFromAddresses)
-            uniqSentContAddr, uniqRecContAddr = self.uniq_addresses(sentToAddressesContract,
-                                                                    receivedFromContractAddress)
-            avgTimeBetweenSentTnx = self.avgTime(timeDiffSent)
-            avgTimeBetweenRecTnx = self.avgTime(timeDiffReceive)
-            avgTimeBetweenContractTnx = self.avgTime(timeDiffContractTnx)
-            minValReceived, maxValReceived, avgValReceived = self.min_max_avg(valueReceived)
-            minValSent, maxValSent, avgValSent = self.min_max_avg(valueSent)
-            minValSentContract, maxValSentContract, avgValSentContract = self.min_max_avg(valueSentContracts)
-            uniqSentTokenName = len(np.unique(tokenSentName))
-            uniqRecTokenName = len(np.unique(tokenReceivedName))
-            if len(tokenSentName) > 0:
-                mostSentTokenType = self.most_frequent(tokenSentName)
-            else:
-                mostSentTokenType = "None"
-
-            if len(tokenReceivedName) > 0:
-                mostRecTokenType = self.most_frequent(tokenReceivedName)
-            else:
-                mostRecTokenType = "None"
-
-            ERC20_contract_tnx_fields = [totalTnx, totalEtherRec, totalEtherSent, totalEtherContract, uniqSentAddr,
-                                         uniqRecAddr,
-                                         uniqSentContAddr, uniqRecContAddr, avgTimeBetweenSentTnx,
-                                         avgTimeBetweenRecTnx, avgTimeBetweenRecTnx, avgTimeBetweenContractTnx,
-                                         minValReceived, maxValReceived, avgValReceived,
-                                         minValSent, maxValSent, avgValSent,
-                                         minValSentContract, maxValSentContract, avgValSentContract,
-                                         uniqSentTokenName, uniqRecTokenName, mostSentTokenType,
-                                         mostRecTokenType]
-        return ERC20_contract_tnx_fields
 
     def normal_transactions(self, index, address, flag):
         """
@@ -281,14 +160,14 @@ class DataCollector:
         Returns:
         transaction_fields = different features based on normal transactions
         """
-        URL = "https://api.etherscan.io/api?module=account&action=txlist&address={address}" \
-              "&startblock=0&endblock=99999999&page=1&offset=10000&sort=asc&apikey=1BDEBF8IZY2H7ENVHPX6II5ZHEBIJ8V33N".format(
+        URL = "http://128.32.43.220:8000/query?q=SELECT%20*%20FROM%20transactions%20WHERE%20from_address=%27{address}" \
+              "%27%20OR%20to_address=%27{address}%27%20LIMIT%205".format(
             address=address)
 
         r = requests.get(url=URL)
         data = r.json()
 
-        timestamp, recipients, timeDiffSent, timeDiffReceive, receivedFromAddresses, \
+        all_stamps, recipients, timeDiffSent, timeDiffReceived, receivedFromAddresses, \
         sentToAddresses, sentToContracts, valueSent, valueReceived, valueSentContracts = ([] for i in range(10))
         receivedTransactions, sentTransactions, createdContracts, minValReceived, \
         maxValReceived, avgValReceived, minValSent, maxValSent, avgValSent, minValSentContract, \
@@ -296,31 +175,27 @@ class DataCollector:
         transaction_fields = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-        if data['status'] != '0':
-            for tnx in range(len(data['result'])):
-                if data['result'][tnx]['isError'] == 1:
-                    pass
-                timestamp.append(data['result'][tnx]['timeStamp'])
-                if data['result'][tnx]['to'] == address:
-                    receivedTransactions = receivedTransactions + 1
-                    receivedFromAddresses.append(data['result'][tnx]['from'])
-                    valueReceived.append(int(data['result'][tnx]['value']) / 1000000000000000000)
-                    if receivedTransactions > 0:
-                        timeDiffReceive.append(
-                            (datetime.utcfromtimestamp(int(timestamp[tnx])) - datetime.utcfromtimestamp(
-                                int(timestamp[tnx - 1]))).total_seconds() / 60)
-                if data['result'][tnx]['from'] == address:
-                    sentTransactions = sentTransactions + 1
-                    sentToAddresses.append(data['result'][tnx]['to'])
-                    valueSent.append(int(data['result'][tnx]['value']) / 1000000000000000000)
-                    if sentTransactions > 0:
-                        timeDiffSent.append((datetime.utcfromtimestamp(int(timestamp[tnx])) - datetime.utcfromtimestamp(
-                            int(timestamp[tnx - 1]))).total_seconds() / 60)
-
-                if data['result'][tnx]['contractAddress'] != '':
-                    createdContracts = createdContracts + 1
-                    sentToContracts.append(data['result'][tnx]['contractAddress'])
-                    valueSentContracts.append(int(data['result'][tnx]['value']) / 1000000000000000000)
+        for tnx_num in range(len(data['result'])):
+            timestamp = data['result']['block_timestamp']['{tnx}'.format(tnx=tnx_num)]
+            all_stamps.append(timestamp)
+            # processing transactions sent to this address
+            if data['result']['to_address']['{tnx}'.format(tnx=tnx_num)] == address:
+                receivedTransactions = receivedTransactions + 1
+                receivedFromAddresses.append(data['result']['from_address']['{tnx}'.format(tnx=tnx_num)])
+                valueReceived.append(int(data['result']['value']['{tnx}'.format(tnx=tnx_num)]) / 1000000000000000000)
+                if receivedTransactions > 0:
+                    t1 = datetime.datetime.strptime(all_stamps[tnx_num], "%Y-%m-%dT%H:%M:%S+00:00")
+                    t2 = datetime.datetime.strptime(all_stamps[tnx_num - 1], "%Y-%m-%dT%H:%M:%S+00:00")
+                    timeDiffReceived.append(abs(int((t1 - t2).total_seconds())) / 60)
+            # processing transactions originating from this address
+            if data['result']['to_address']['{tnx}'.format(tnx=tnx_num)] == address:
+                sentTransactions = sentTransactions + 1
+                sentToAddresses.append(data['result']['to_address']['{tnx}'.format(tnx=tnx_num)])
+                valueSent.append(int(data['result']['value']['{tnx}'.format(tnx=tnx_num)]) / 1000000000000000000)
+                if receivedTransactions > 0:
+                    t1 = datetime.datetime.strptime(all_stamps[tnx_num], "%Y-%m-%dT%H:%M:%S+00:00")
+                    t2 = datetime.datetime.strptime(all_stamps[tnx_num - 1], "%Y-%m-%dT%H:%M:%S+00:00")
+                    timeDiffSent.append(abs(int((t1 - t2).total_seconds())) / 60)
 
             totalTnx = sentTransactions + receivedTransactions + createdContracts
             totalEtherReceived = np.sum(valueReceived)
@@ -328,12 +203,12 @@ class DataCollector:
             totalEtherSentContracts = np.sum(valueSentContracts)
             totalEtherBalance = totalEtherReceived - totalEtherSent - totalEtherSentContracts
             avgTimeBetweenSentTnx = self.avgTime(timeDiffSent)
-            avgTimeBetweenRecTnx = self.avgTime(timeDiffReceive)
+            avgTimeBetweenRecTnx = self.avgTime(timeDiffReceived)
             numUniqSentAddress, numUniqRecAddress = self.uniq_addresses(sentToAddresses, receivedFromAddresses)
             minValReceived, maxValReceived, avgValReceived = self.min_max_avg(valueReceived)
             minValSent, maxValSent, avgValSent = self.min_max_avg(valueSent)
             minValSentContract, maxValSentContract, avgValSentContract = self.min_max_avg(valueSentContracts)
-            timeDiffBetweenFirstAndLast = self.timeDiffFirstLast(timestamp)
+            timeDiffBetweenFirstAndLast = self.timeDiffFirstLast(all_stamps)
 
             ILLICIT_OR_NORMAL_ACCOUNT_FLAG = flag
 
@@ -349,21 +224,25 @@ class DataCollector:
                                   totalEtherBalance]
         return transaction_fields
 
-    def timeDiffFirstLast(self, timestamp):
+
+    def timeDiffFirstLast(self, timestamps):
         """
         This function calculates the time difference from last transaction
 
         Parameters:
-        timestamp: the timestamp
+        timestamp: an array of the timestamps of all the transactions related to one address
 
         Returns:
-        timeDiff: the calculated time difference
+        timeDiff: the calculated time difference between the first and last transaction
         """
-        timeDiff = 0
-        if len(timestamp) > 0:
-            timeDiff = "{0:.2f}".format((datetime.utcfromtimestamp(int(timestamp[-1])) - datetime.utcfromtimestamp(
-                int(timestamp[0]))).total_seconds() / 60)
-        return timeDiff
+        time_diff = 0
+        if len(timestamps) > 0:
+            t1 = datetime.datetime.strptime(timestamps[0], "%Y-%m-%dT%H:%M:%S+00:00")
+            t2 = datetime.datetime.strptime(timestamps[-1], "%Y-%m-%dT%H:%M:%S+00:00")
+            time_diff = "{0:.2f}".format(abs(int((t1 - t2).total_seconds())) / 60)
+
+        return time_diff
+
 
     def avgTime(self, timeDiff):
         """
@@ -375,10 +254,11 @@ class DataCollector:
         Returns:
         timeDiff: the calculated average time
         """
-        timeDifference = 0
+        avg = 0
         if len(timeDiff) > 1:
-            timeDifference = "{0:.2f}".format(mean(timeDiff))
-        return timeDifference
+            avg = "{0:.2f}".format(mean(timeDiff))
+        return avg
+
 
     def min_max_avg(self, value_array_tnxs):
         """
@@ -396,6 +276,7 @@ class DataCollector:
             maxVal = max(value_array_tnxs)
             avgVal = mean(value_array_tnxs)
         return "{0:.6f}".format(minVal), "{0:.6f}".format(maxVal), "{0:.6f}".format(avgVal)
+
 
     def uniq_addresses(self, sent_addresses, received_addresses):
         """
@@ -417,6 +298,7 @@ class DataCollector:
             uniqRec = len(np.unique(received_addresses))
         return uniqSent, uniqRec
 
+    # TODO: may be an unnecessary function
     def most_frequent(self, List):
         '''
         This method gets the most frequent value of a List
@@ -428,3 +310,26 @@ class DataCollector:
         the mode of the list
         '''
         return max(set(List), key=List.count)
+
+    #TODO: may be an unnecessary function
+    def account_balance(self, address):
+        """
+        Function to obtain account balance
+
+        Parameters:
+        address: the address of an account
+
+        Returns:
+        balance: balance of given address
+        """
+        url = "https://api.etherscan.io/api?module=account&action=balance&address={address}" \
+              "&tag=latest&apikey=1BDEBF8IZY2H7ENVHPX6II5ZHEBIJ8V33N".format(address=address)
+
+        r = requests.get(url=url)
+        data = r.json()
+        balance = 0
+
+        if data['status'] != 0:
+            balance = int(data['result']) / 1000000000000000000
+
+        return balance
