@@ -88,8 +88,8 @@ class DataCollector:
         # writing information for clean addresses
         for address in cleans:
             # Loop through addresses, and get data for each address
-            print(index)
-            print(address)
+            #print(index)
+            #print(address)
             normal_tnxs = self.normal_transactions(index, address, flag=flag)
             try:
                 # Save obtained data to csv file
@@ -166,11 +166,11 @@ class DataCollector:
         """
         URL = "http://128.32.43.220:8000/query?q=SELECT%20*%20FROM%20transactions%20WHERE%20from_address=%27{address}" \
               "%27%20OR%20to_address=%27{address}%27%20ORDER%20BY%20block_timestamp".format(address=address)
-        print("checkpoint 1")
+        #print("checkpoint 1")
         r = requests.get(url=URL)
-        print("checkpoint 2")
+        #print("checkpoint 2")
         data = r.json()
-        print("checkpoint 3")
+        #print("checkpoint 3")
 
         all_stamps, recipients, timeDiffSent, timeDiffReceived, receivedFromAddresses, \
         sentToAddresses, sentToContracts, valueSent, valueReceived, valueSentContracts = ([] for i in range(10))
