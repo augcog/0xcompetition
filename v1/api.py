@@ -73,6 +73,6 @@ def query(q: str):
     """
     try:
         result: pd.DataFrame = wrapper.query(q)
-        return {"result": result.to_dict()}
+        return {"result": pd.DataFrame.to_json(result.to_dict())}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")

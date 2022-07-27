@@ -8,6 +8,7 @@ import requests, string, time
 from statistics import mean
 from datetime import datetime
 import logging
+import json
 
 logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s')
 
@@ -84,12 +85,15 @@ class DataCollector:
 
         pbar = tqdm(total=len(cleans)+len(illicits))
 
-        # writing information for clean address
+        # writing information for clean addresses
         for address in cleans:
             # Loop through addresses, and get data for each address
+            print(index)
+            print(address)
             normal_tnxs = self.normal_transactions(index, address, flag=flag)
             try:
                 # Save obtained data to csv file
+                print(index)
                 all_tnxs = normal_tnxs
                 with open(r'./{}.csv'.format(name), 'a', newline="") as f:
                     writer = csv.writer(f, delimiter=',')
@@ -100,7 +104,7 @@ class DataCollector:
             except:
                 continue
 
-        # writing information for illicit address
+        # writing information for illicit addresses
         for address in illicits:
             # Loop through addresses, and get data for each address
             normal_tnxs = self.normal_transactions(index, address, flag=flag)
@@ -161,11 +165,12 @@ class DataCollector:
         transaction_fields = different features based on normal transactions
         """
         URL = "http://128.32.43.220:8000/query?q=SELECT%20*%20FROM%20transactions%20WHERE%20from_address=%27{address}" \
-              "%27%20OR%20to_address=%27{address}%27%20LIMIT%205".format(
-            address=address)
-
+              "%27%20OR%20to_address=%27{address}%27%20ORDER%20BY%20block_timestamp".format(address=address)
+        print("checkpoint 1")
         r = requests.get(url=URL)
+        print("checkpoint 2")
         data = r.json()
+        print("checkpoint 3")
 
         all_stamps, recipients, timeDiffSent, timeDiffReceived, receivedFromAddresses, \
         sentToAddresses, sentToContracts, valueSent, valueReceived, valueSentContracts = ([] for i in range(10))
@@ -175,27 +180,32 @@ class DataCollector:
         transaction_fields = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-        for tnx_num in range(len(data['result'])):
-            timestamp = data['result']['block_timestamp']['{tnx}'.format(tnx=tnx_num)]
-            all_stamps.append(timestamp)
-            # processing transactions sent to this address
-            if data['result']['to_address']['{tnx}'.format(tnx=tnx_num)] == address:
-                receivedTransactions = receivedTransactions + 1
-                receivedFromAddresses.append(data['result']['from_address']['{tnx}'.format(tnx=tnx_num)])
-                valueReceived.append(int(data['result']['value']['{tnx}'.format(tnx=tnx_num)]) / 1000000000000000000)
-                if receivedTransactions > 0:
-                    t1 = datetime.datetime.strptime(all_stamps[tnx_num], "%Y-%m-%dT%H:%M:%S+00:00")
-                    t2 = datetime.datetime.strptime(all_stamps[tnx_num - 1], "%Y-%m-%dT%H:%M:%S+00:00")
-                    timeDiffReceived.append(abs(int((t1 - t2).total_seconds())) / 60)
-            # processing transactions originating from this address
-            if data['result']['to_address']['{tnx}'.format(tnx=tnx_num)] == address:
-                sentTransactions = sentTransactions + 1
-                sentToAddresses.append(data['result']['to_address']['{tnx}'.format(tnx=tnx_num)])
-                valueSent.append(int(data['result']['value']['{tnx}'.format(tnx=tnx_num)]) / 1000000000000000000)
-                if receivedTransactions > 0:
-                    t1 = datetime.datetime.strptime(all_stamps[tnx_num], "%Y-%m-%dT%H:%M:%S+00:00")
-                    t2 = datetime.datetime.strptime(all_stamps[tnx_num - 1], "%Y-%m-%dT%H:%M:%S+00:00")
-                    timeDiffSent.append(abs(int((t1 - t2).total_seconds())) / 60)
+        try:
+            for tnx_num in range(len(data['result']['hash'])):
+                timestamp = data['result']['block_timestamp']['{tnx}'.format(tnx=tnx_num)]
+                all_stamps.append(timestamp)
+                # processing transactions sent to this address
+                if data['result']['to_address']['{tnx}'.format(tnx=tnx_num)] == address:
+                    receivedTransactions = receivedTransactions + 1
+                    receivedFromAddresses.append(data['result']['from_address']['{tnx}'.format(tnx=tnx_num)])
+                    valueReceived.append(int(data['result']['value']['{tnx}'.format(tnx=tnx_num)]) / 1000000000000000000)
+                    if receivedTransactions > 0:
+                        t1 = datetime.strptime(all_stamps[tnx_num], "%Y-%m-%dT%H:%M:%S%z")
+                        t2 = datetime.strptime(all_stamps[tnx_num - 1], "%Y-%m-%dT%H:%M:%S%z")
+                        timeDiffReceived.append(abs(int((t1 - t2).total_seconds())) / 60)
+                # processing transactions originating from this address
+                if data['result']['to_address']['{tnx}'.format(tnx=tnx_num)] == address:
+                    sentTransactions = sentTransactions + 1
+                    sentToAddresses.append(data['result']['to_address']['{tnx}'.format(tnx=tnx_num)])
+                    valueSent.append(int(data['result']['value']['{tnx}'.format(tnx=tnx_num)]) / 1000000000000000000)
+                    if receivedTransactions > 0:
+                        t1 = datetime.strptime(all_stamps[tnx_num], "%Y-%m-%dT%H:%M:%S%z")
+                        t2 = datetime.strptime(all_stamps[tnx_num - 1], "%Y-%m-%dT%H:%M:%S%z")
+                        timeDiffSent.append(abs(int((t1 - t2).total_seconds())) / 60)
+        except Exception as e:
+            print(address)
+            print(e)
+            print(address)
 
             totalTnx = sentTransactions + receivedTransactions + createdContracts
             totalEtherReceived = np.sum(valueReceived)
@@ -237,8 +247,8 @@ class DataCollector:
         """
         time_diff = 0
         if len(timestamps) > 0:
-            t1 = datetime.datetime.strptime(timestamps[0], "%Y-%m-%dT%H:%M:%S+00:00")
-            t2 = datetime.datetime.strptime(timestamps[-1], "%Y-%m-%dT%H:%M:%S+00:00")
+            t1 = datetime.strptime(timestamps[0], "%Y-%m-%dT%H:%M:%S%z")
+            t2 = datetime.strptime(timestamps[-1], "%Y-%m-%dT%H:%M:%S%z")
             time_diff = "{0:.2f}".format(abs(int((t1 - t2).total_seconds())) / 60)
 
         return time_diff
