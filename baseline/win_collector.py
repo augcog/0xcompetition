@@ -89,7 +89,7 @@ class DataCollector:
         for address in cleans:
             # Loop through addresses, and get data for each address
             #print(index)
-            #print(address)
+            print(address)
             normal_tnxs = self.normal_transactions(index, address, flag=flag)
             try:
                 # Save obtained data to csv file
@@ -165,7 +165,7 @@ class DataCollector:
         transaction_fields = different features based on normal transactions
         """
         URL = "http://128.32.43.220:8000/query?q=SELECT%20*%20FROM%20transactions%20WHERE%20from_address=%27{address}" \
-              "%27%20OR%20to_address=%27{address}%27%20ORDER%20BY%20block_timestamp".format(address=address)
+              "%27%20OR%20to_address=%27{address}%27%20ORDER%20BY%20block_timestamp%20LIMIT%2020".format(address=address)
         #print("checkpoint 1")
         r = requests.get(url=URL)
         #print("checkpoint 2")

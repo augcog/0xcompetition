@@ -70,7 +70,8 @@ class BlockDBSQLWrapper:
         """
         assert query.count(';') < 2, "Please check query format!"
         assert "--" not in query, "Comment symbol \'--\' not permitted!"
-        # check for keywords
+        # check for keyword 'true'
+        assert "true" not in query, "Keyword \'true\' not permitted!"
 
         results = pd.read_sql_query(query, self.db_connection)
         df = pd.DataFrame(results, columns=None)

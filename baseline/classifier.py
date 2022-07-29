@@ -25,6 +25,7 @@ import graphviz
 from xgboost import plot_importance
 import preprocessor
 import win_collector
+import win_preprocessor
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -37,35 +38,30 @@ def model_eval(model, x_train, y_train, x_test, y_test):
     accuracy = accuracy_score(y_test, predictions)
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
 
-    print(classification_report(y_test, predictions))
-
-    cm = confusion_matrix(y_test, predictions, labels=model.classes_)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
-    disp.plot()
-    plt.show()
-
-    f1_score(y_test, predictions, average="weighted")
-
-    probs = model.predict_proba(X_test)
-    probs = probs[:, 1]
-
-    auc = roc_auc_score(y_test, predictions)
-    print("AUC: %.3f" % auc)
-
-    fpr, tpr, thresholds = roc_curve(y_test, probs)
-
-    model_name = type(model).__name__
-    plt.plot([0, 1], [0, 1], linestyle='--', label="No skill")
-    plt.plot(fpr, tpr, marker=".", label=model_name)
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.legend()
-    plt.show()
-
 
 if __name__ == "__main__":
 
+    # pulling transaction data from database
     collector = win_collector.DataCollector()
     collector.main(name="combined_dataset")
 
+    # load in csv into a pandas dataframe
+    data = pd.read_csv('./combined_dataset')
+    preprocessor = win_preprocessor.Preprocessor(data)
+    preprocessor.remove_features()
+
+    y = data.iloc[:, 0]
+    X = data.iloc[:, 1:]
+
+    # split data into train and test
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+    # oversampling
+    x_train_sm, y_train_sm = SMOTE().fit_resample(X_train, y_train)
+
+    # initialization of XGBoost classifier
+    xgb_clf = XGBClassifier(use_label_encoder=False, eval_metric="error")
+
+    # train and evaluate
+    model_eval(xgb_clf, x_train_sm, y_train_sm, X_test, y_test)
 
