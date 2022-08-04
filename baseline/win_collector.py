@@ -72,53 +72,58 @@ class DataCollector:
         name = the name of the csv file to be saved
         inference_addresses = if inference=True, then the list of addresses to fetch data from
         """
-        addresses = []
-        name = name
-        flag = 0
         if self.inference == False:
+            name = name
             cleans = self.get_clean_account_addresses()
             illicits = self.get_illicit_account_addresses()
         else:
             name = 'inference'
             addresses = inference_addresses
-        index = 1
 
+        index = 1
         pbar = tqdm(total=len(cleans)+len(illicits))
 
         # writing information for clean addresses
         for address in cleans:
             # Loop through addresses, and get data for each address
-            #print(index)
             print(address)
-            normal_tnxs = self.normal_transactions(index, address, flag=flag)
             try:
                 # Save obtained data to csv file
-                print(index)
-                all_tnxs = normal_tnxs
+                normal_txns = self.normal_transactions(index, address, flag=0)
+                print("Clean address #" + str(index) + " - " + address + " information collected")
+                print(datetime.now())
+                print("-----")
+                all_txns = normal_txns
                 with open(r'./{}.csv'.format(name), 'a', newline="") as f:
                     writer = csv.writer(f, delimiter=',')
-                    writer.writerow(all_tnxs)
-                    logging.debug(all_tnxs)
+                    writer.writerow(all_txns)
+                    logging.debug(all_txns)
                 index += 1
                 pbar.update(1)
-            except:
-                continue
+            except Exception as e:
+                print("Error message: ")
+                print(e)
 
         # writing information for illicit addresses
         for address in illicits:
             # Loop through addresses, and get data for each address
-            normal_tnxs = self.normal_transactions(index, address, flag=flag)
+            print(address)
             try:
                 # Save obtained data to csv file
-                all_tnxs = normal_tnxs
+                normal_txns = self.normal_transactions(index, address, flag=1)
+                print("Illicit address #" + str(index) + " - " + address + " information collected!")
+                print(datetime.now())
+                print("-----")
+                all_txns = normal_txns
                 with open(r'./{}.csv'.format(name), 'a', newline="") as f:
                     writer = csv.writer(f, delimiter=',')
-                    writer.writerow(all_tnxs)
-                    logging.debug(all_tnxs)
+                    writer.writerow(all_txns)
+                    logging.debug(all_txns)
                 index += 1
                 pbar.update(1)
-            except:
-                continue
+            except Exception as e:
+                print("Error message: ")
+                print(e)
 
         pbar.close()
 
@@ -164,13 +169,13 @@ class DataCollector:
         Returns:
         transaction_fields = different features based on normal transactions
         """
-        URL = "http://128.32.43.220:8000/query?q=SELECT%20*%20FROM%20transactions%20WHERE%20from_address=%27{address}" \
-              "%27%20OR%20to_address=%27{address}%27%20ORDER%20BY%20block_timestamp%20LIMIT%2020".format(address=address)
-        #print("checkpoint 1")
+        URL = "http://128.32.43.220:8000/query?q=SELECT%20hash,block_timestamp,to_address,from_address,value%20FROM%20" \
+              "transactions%20WHERE%20from_address=%27{address}" \
+              "%27%20OR%20to_address=%27{address}%27%20ORDER%20BY%20block_timestamp".format(address=address)
         r = requests.get(url=URL)
-        #print("checkpoint 2")
+        print("request retrieved")
         data = r.json()
-        #print("checkpoint 3")
+        print("result converted to json")
 
         all_stamps, recipients, timeDiffSent, timeDiffReceived, receivedFromAddresses, \
         sentToAddresses, sentToContracts, valueSent, valueReceived, valueSentContracts = ([] for i in range(10))
@@ -203,35 +208,37 @@ class DataCollector:
                         t2 = datetime.strptime(all_stamps[tnx_num - 1], "%Y-%m-%dT%H:%M:%S%z")
                         timeDiffSent.append(abs(int((t1 - t2).total_seconds())) / 60)
         except Exception as e:
-            print(address)
+            print("Error in normal_transactions(): ")
             print(e)
-            print(address)
+            print(" at address: " + address)
 
-            totalTnx = sentTransactions + receivedTransactions + createdContracts
-            totalEtherReceived = np.sum(valueReceived)
-            totalEtherSent = np.sum(valueSent)
-            totalEtherSentContracts = np.sum(valueSentContracts)
-            totalEtherBalance = totalEtherReceived - totalEtherSent - totalEtherSentContracts
-            avgTimeBetweenSentTnx = self.avgTime(timeDiffSent)
-            avgTimeBetweenRecTnx = self.avgTime(timeDiffReceived)
-            numUniqSentAddress, numUniqRecAddress = self.uniq_addresses(sentToAddresses, receivedFromAddresses)
-            minValReceived, maxValReceived, avgValReceived = self.min_max_avg(valueReceived)
-            minValSent, maxValSent, avgValSent = self.min_max_avg(valueSent)
-            minValSentContract, maxValSentContract, avgValSentContract = self.min_max_avg(valueSentContracts)
-            timeDiffBetweenFirstAndLast = self.timeDiffFirstLast(all_stamps)
 
-            ILLICIT_OR_NORMAL_ACCOUNT_FLAG = flag
+        totalTnx = sentTransactions + receivedTransactions + createdContracts
+        totalEtherReceived = np.sum(valueReceived)
+        totalEtherSent = np.sum(valueSent)
+        totalEtherSentContracts = np.sum(valueSentContracts)
+        totalEtherBalance = totalEtherReceived - totalEtherSent - totalEtherSentContracts
+        avgTimeBetweenSentTnx = self.avgTime(timeDiffSent)
+        avgTimeBetweenRecTnx = self.avgTime(timeDiffReceived)
+        numUniqSentAddress, numUniqRecAddress = self.uniq_addresses(sentToAddresses, receivedFromAddresses)
+        minValReceived, maxValReceived, avgValReceived = self.min_max_avg(valueReceived)
+        minValSent, maxValSent, avgValSent = self.min_max_avg(valueSent)
+        minValSentContract, maxValSentContract, avgValSentContract = self.min_max_avg(valueSentContracts)
+        timeDiffBetweenFirstAndLast = self.timeDiffFirstLast(all_stamps)
 
-            transaction_fields = [index, address, ILLICIT_OR_NORMAL_ACCOUNT_FLAG, avgTimeBetweenSentTnx,
-                                  avgTimeBetweenRecTnx, timeDiffBetweenFirstAndLast,
-                                  sentTransactions,
-                                  receivedTransactions, createdContracts,
-                                  numUniqRecAddress, numUniqSentAddress,
-                                  minValReceived, maxValReceived, avgValReceived,
-                                  minValSent, maxValSent, avgValSent,
-                                  minValSentContract, maxValSentContract, avgValSentContract,
-                                  totalTnx, totalEtherSent, totalEtherReceived, totalEtherSentContracts,
-                                  totalEtherBalance]
+        ILLICIT_OR_NORMAL_ACCOUNT_FLAG = flag
+
+        transaction_fields = [index, address, ILLICIT_OR_NORMAL_ACCOUNT_FLAG, avgTimeBetweenSentTnx,
+                              avgTimeBetweenRecTnx, timeDiffBetweenFirstAndLast,
+                              sentTransactions,
+                              receivedTransactions, createdContracts,
+                              numUniqRecAddress, numUniqSentAddress,
+                              minValReceived, maxValReceived, avgValReceived,
+                              minValSent, maxValSent, avgValSent,
+                              minValSentContract, maxValSentContract, avgValSentContract,
+                              totalTnx, totalEtherSent, totalEtherReceived, totalEtherSentContracts,
+                              totalEtherBalance]
+
         return transaction_fields
 
 
@@ -343,3 +350,8 @@ class DataCollector:
             balance = int(data['result']) / 1000000000000000000
 
         return balance
+
+
+"http://128.32.43.220:8000/query?q=SELECT%20*%20FROM%20transactions%20WHERE%20" \
+"from_address=%270x804d39f546c5164af7612c3dca3683150e55bb78%27%20OR%20" \
+"to_address=%270x804d39f546c5164af7612c3dca3683150e55bb78%27%20ORDER%20BY%20block_timestamp%20LIMIT%205"
