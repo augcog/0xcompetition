@@ -90,14 +90,15 @@ class DataCollector:
             try:
                 # Save obtained data to csv file
                 normal_txns = self.normal_transactions(index, address, flag=0)
-                print("Clean address #" + str(index) + " - " + address + " information collected")
-                print(datetime.now())
-                print("-----")
+                print("Information collected!")
                 all_txns = normal_txns
                 with open(r'./{}.csv'.format(name), 'a', newline="") as f:
                     writer = csv.writer(f, delimiter=',')
                     writer.writerow(all_txns)
                     logging.debug(all_txns)
+                print("Clean address #" + str(index) + " - " + address + " information written into CSV!")
+                print(datetime.now())
+                print("-----")
                 index += 1
                 pbar.update(1)
             except Exception as e:
@@ -111,14 +112,15 @@ class DataCollector:
             try:
                 # Save obtained data to csv file
                 normal_txns = self.normal_transactions(index, address, flag=1)
-                print("Illicit address #" + str(index) + " - " + address + " information collected!")
-                print(datetime.now())
-                print("-----")
+                print("Information collected!")
                 all_txns = normal_txns
                 with open(r'./{}.csv'.format(name), 'a', newline="") as f:
                     writer = csv.writer(f, delimiter=',')
                     writer.writerow(all_txns)
                     logging.debug(all_txns)
+                print("Illicit address #" + str(index) + " - " + address + " information written into CSV!")
+                print(datetime.now())
+                print("-----")
                 index += 1
                 pbar.update(1)
             except Exception as e:
@@ -169,14 +171,6 @@ class DataCollector:
         Returns:
         transaction_fields = different features based on normal transactions
         """
-        URL = "http://128.32.43.220:8000/query?q=SELECT%20hash,block_timestamp,to_address,from_address,value%20FROM%20" \
-              "transactions%20WHERE%20from_address=%27{address}" \
-              "%27%20OR%20to_address=%27{address}%27%20ORDER%20BY%20block_timestamp".format(address=address)
-        r = requests.get(url=URL)
-        print("request retrieved")
-        data = r.json()
-        print("result converted to json")
-
         all_stamps, recipients, timeDiffSent, timeDiffReceived, receivedFromAddresses, \
         sentToAddresses, sentToContracts, valueSent, valueReceived, valueSentContracts = ([] for i in range(10))
         receivedTransactions, sentTransactions, createdContracts, minValReceived, \
@@ -185,33 +179,50 @@ class DataCollector:
         transaction_fields = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-        try:
-            for tnx_num in range(len(data['result']['hash'])):
-                timestamp = data['result']['block_timestamp']['{tnx}'.format(tnx=tnx_num)]
-                all_stamps.append(timestamp)
-                # processing transactions sent to this address
-                if data['result']['to_address']['{tnx}'.format(tnx=tnx_num)] == address:
-                    receivedTransactions = receivedTransactions + 1
-                    receivedFromAddresses.append(data['result']['from_address']['{tnx}'.format(tnx=tnx_num)])
-                    valueReceived.append(int(data['result']['value']['{tnx}'.format(tnx=tnx_num)]) / 1000000000000000000)
-                    if receivedTransactions > 0:
-                        t1 = datetime.strptime(all_stamps[tnx_num], "%Y-%m-%dT%H:%M:%S%z")
-                        t2 = datetime.strptime(all_stamps[tnx_num - 1], "%Y-%m-%dT%H:%M:%S%z")
-                        timeDiffReceived.append(abs(int((t1 - t2).total_seconds())) / 60)
-                # processing transactions originating from this address
-                if data['result']['to_address']['{tnx}'.format(tnx=tnx_num)] == address:
-                    sentTransactions = sentTransactions + 1
-                    sentToAddresses.append(data['result']['to_address']['{tnx}'.format(tnx=tnx_num)])
-                    valueSent.append(int(data['result']['value']['{tnx}'.format(tnx=tnx_num)]) / 1000000000000000000)
-                    if receivedTransactions > 0:
-                        t1 = datetime.strptime(all_stamps[tnx_num], "%Y-%m-%dT%H:%M:%S%z")
-                        t2 = datetime.strptime(all_stamps[tnx_num - 1], "%Y-%m-%dT%H:%M:%S%z")
-                        timeDiffSent.append(abs(int((t1 - t2).total_seconds())) / 60)
-        except Exception as e:
-            print("Error in normal_transactions(): ")
-            print(e)
-            print(" at address: " + address)
+        offset = 0
+        limit = 500000
 
+        while 1:
+
+            URL = "http://128.32.43.220:8000/query?q=SELECT%20hash,block_timestamp,to_address,from_address,value%20FROM%20" \
+                  "transactions%20WHERE%20from_address=%27{address}%27%20OR%20to_address=%27{address}%27%20ORDER%20BY%20" \
+                  "block_timestamp%20LIMIT%20{limit}%20OFFSET%20{offset}".format(address=address,limit=limit,offset=offset*limit)
+            r = requests.get(url=URL)
+            print("request " + str(offset+1) + " retrieved")
+            data = r.json()
+            print("result " + str(offset+1) + " converted to json")
+
+            if len(data['result']['hash']) < 2:
+                break
+
+            try:
+                for tnx_num in range(len(data['result']['hash'])):
+                    timestamp = data['result']['block_timestamp']['{tnx}'.format(tnx=tnx_num)]
+                    all_stamps.append(timestamp)
+                    # processing transactions sent to this address
+                    if data['result']['to_address']['{tnx}'.format(tnx=tnx_num)] == address:
+                        receivedTransactions = receivedTransactions + 1
+                        receivedFromAddresses.append(data['result']['from_address']['{tnx}'.format(tnx=tnx_num)])
+                        valueReceived.append(int(data['result']['value']['{tnx}'.format(tnx=tnx_num)]) / 1000000000000000000)
+                        if receivedTransactions > 0:
+                            t1 = datetime.strptime(all_stamps[len(all_stamps) - 1], "%Y-%m-%dT%H:%M:%S%z")
+                            t2 = datetime.strptime(all_stamps[len(all_stamps) - 2], "%Y-%m-%dT%H:%M:%S%z")
+                            timeDiffReceived.append(abs(int((t1 - t2).total_seconds())) / 60)
+                    # processing transactions originating from this address
+                    if data['result']['to_address']['{tnx}'.format(tnx=tnx_num)] == address:
+                        sentTransactions = sentTransactions + 1
+                        sentToAddresses.append(data['result']['to_address']['{tnx}'.format(tnx=tnx_num)])
+                        valueSent.append(int(data['result']['value']['{tnx}'.format(tnx=tnx_num)]) / 1000000000000000000)
+                        if receivedTransactions > 0:
+                            t1 = datetime.strptime(all_stamps[len(all_stamps) - 1], "%Y-%m-%dT%H:%M:%S%z")
+                            t2 = datetime.strptime(all_stamps[len(all_stamps) - 2], "%Y-%m-%dT%H:%M:%S%z")
+                            timeDiffSent.append(abs(int((t1 - t2).total_seconds())) / 60)
+            except Exception as e:
+                print("Error in normal_transactions(): ")
+                print(e)
+                print(" at address: " + address)
+
+            offset += 1
 
         totalTnx = sentTransactions + receivedTransactions + createdContracts
         totalEtherReceived = np.sum(valueReceived)
