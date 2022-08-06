@@ -63,7 +63,7 @@ class DataCollector:
         return np.array(addresses)
 
 
-    def main(self, name='clean_addresses', inference_addresses=[]):
+    def main(self, name='combined_dataset'):
         """
         Main function of the DataCollector Class.
         This function links together all the methods and processes together
@@ -72,13 +72,8 @@ class DataCollector:
         name = the name of the csv file to be saved
         inference_addresses = if inference=True, then the list of addresses to fetch data from
         """
-        if self.inference == False:
-            name = name
-            cleans = self.get_clean_account_addresses()
-            illicits = self.get_illicit_account_addresses()
-        else:
-            name = 'inference'
-            addresses = inference_addresses
+        cleans = self.get_clean_account_addresses()
+        illicits = self.get_illicit_account_addresses()
 
         index = 1
         pbar = tqdm(total=len(cleans)+len(illicits))
@@ -128,10 +123,6 @@ class DataCollector:
                 print(e)
 
         pbar.close()
-
-        if name == 'inference':
-            df = pd.read_csv('inference.csv', header=None)
-            return df
 
     # TODO: may be an unnecessary function
     def get_total_number_of_normal_transactions(self, address):

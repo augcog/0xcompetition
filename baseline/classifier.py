@@ -36,7 +36,7 @@ def model_eval(model, x_train, y_train, x_test, y_test):
     predictions = model.predict(x_test)
 
     accuracy = accuracy_score(y_test, predictions)
-    print("Accuracy: %.2f%%" % (accuracy * 100.0))
+    return accuracy
 
 
 if __name__ == "__main__":
@@ -63,5 +63,5 @@ if __name__ == "__main__":
     xgb_clf = XGBClassifier(use_label_encoder=False, eval_metric="error")
 
     # train and evaluate
-    model_eval(xgb_clf, x_train_sm, y_train_sm, X_test, y_test)
+    print("Accuracy: %.2f%%" % (100.0 * model_eval(xgb_clf, x_train_sm, y_train_sm, X_test, y_test)))
 
