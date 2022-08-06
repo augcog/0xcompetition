@@ -22,9 +22,7 @@ class Preprocessor:
         df = a DataFrame without unneeded features
         """
         # Remove unnecessary fields
-        self.df.drop(['max_fee_per_gas', 'max_priority_fee_per_gas', 'receipt_cumulative_gas_used',
-                      'receipt_gas_used', 'receipt_contract_address', 'receipt_root', 'receipt_status',
-                      'receipt_effective_gas_price'], axis=1, inplace=True)
+        self.df.drop(['index', 'address'], axis=1, inplace=True)
 
     def drop_duplicates(self):
         self.df.drop_duplicates(inplace=True)

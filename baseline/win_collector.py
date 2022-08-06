@@ -24,7 +24,6 @@ class DataCollector:
         # Specify if the data we are obtaining is for Inference or not
         self.inference = inference
 
-
     def get_clean_account_addresses(self):
         '''
         This method gets the clean account addresses
@@ -41,7 +40,6 @@ class DataCollector:
 
         # Return a numpy array of addresses obtained
         return np.array(clean_account_adresses['Address'])
-
 
     def get_illicit_account_addresses(self):
         '''
@@ -61,7 +59,6 @@ class DataCollector:
         logging.debug("Number of unique illegal addresses in JSON file: ", len(np.unique(addresses)))
 
         return np.array(addresses)
-
 
     def main(self, name='combined_dataset'):
         """
@@ -123,32 +120,6 @@ class DataCollector:
                 print(e)
 
         pbar.close()
-
-    # TODO: may be an unnecessary function
-    def get_total_number_of_normal_transactions(self, address):
-        """
-        Function to obtain total number of normal transactions
-
-        Parameters:
-        address: the address of an account
-
-        Returns:
-        num_normal_transactions = the number of normal transactions
-        """
-
-        url = "http://api.etherscan.io/api?module=account&action=txlist&address={address}" \
-              "&startblock=0&endblock=99999999&sort=asc&apikey=1BDEBF8IZY2H7ENVHPX6II5ZHEBIJ8V33N".format(
-            address=address)
-        r = requests.get(url=url)
-        data = r.json()
-        num_normal_transactions = 0
-
-        if data['status'] != 0:
-            for tnx in range(len(data['result'])):
-                num_normal_transactions += 1
-
-        return num_normal_transactions
-
 
     def normal_transactions(self, index, address, flag):
         """
@@ -243,7 +214,6 @@ class DataCollector:
 
         return transaction_fields
 
-
     def timeDiffFirstLast(self, timestamps):
         """
         This function calculates the time difference from last transaction
@@ -262,7 +232,6 @@ class DataCollector:
 
         return time_diff
 
-
     def avgTime(self, timeDiff):
         """
         This function calculates the average time from the time difference
@@ -277,7 +246,6 @@ class DataCollector:
         if len(timeDiff) > 1:
             avg = "{0:.2f}".format(mean(timeDiff))
         return avg
-
 
     def min_max_avg(self, value_array_tnxs):
         """
@@ -295,7 +263,6 @@ class DataCollector:
             maxVal = max(value_array_tnxs)
             avgVal = mean(value_array_tnxs)
         return "{0:.6f}".format(minVal), "{0:.6f}".format(maxVal), "{0:.6f}".format(avgVal)
-
 
     def uniq_addresses(self, sent_addresses, received_addresses):
         """
@@ -316,44 +283,3 @@ class DataCollector:
         if received_addresses:
             uniqRec = len(np.unique(received_addresses))
         return uniqSent, uniqRec
-
-    # TODO: may be an unnecessary function
-    def most_frequent(self, List):
-        '''
-        This method gets the most frequent value of a List
-
-        Parameters:
-        List = a list of values
-
-        Returns:
-        the mode of the list
-        '''
-        return max(set(List), key=List.count)
-
-    #TODO: may be an unnecessary function
-    def account_balance(self, address):
-        """
-        Function to obtain account balance
-
-        Parameters:
-        address: the address of an account
-
-        Returns:
-        balance: balance of given address
-        """
-        url = "https://api.etherscan.io/api?module=account&action=balance&address={address}" \
-              "&tag=latest&apikey=1BDEBF8IZY2H7ENVHPX6II5ZHEBIJ8V33N".format(address=address)
-
-        r = requests.get(url=url)
-        data = r.json()
-        balance = 0
-
-        if data['status'] != 0:
-            balance = int(data['result']) / 1000000000000000000
-
-        return balance
-
-
-"http://128.32.43.220:8000/query?q=SELECT%20*%20FROM%20transactions%20WHERE%20" \
-"from_address=%270x804d39f546c5164af7612c3dca3683150e55bb78%27%20OR%20" \
-"to_address=%270x804d39f546c5164af7612c3dca3683150e55bb78%27%20ORDER%20BY%20block_timestamp%20LIMIT%205"
