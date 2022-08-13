@@ -14,6 +14,21 @@ def test_init_exists():
         block_db_sql_wrapper = BlockDBSQLWrapper(file_path=fp)
 
 
+def test_query_multiple_terminators():
+    fp = "config/settings.json"
+    block_db_sql_wrapper = BlockDBSQLWrapper(file_path=fp)
+    with pytest.raises(AssertionError):
+        print(block_db_sql_wrapper.query("SELECT * FROM transactions WHERE from_address='0x804d39f546c5164af7612c3dca3683150e55bb78' ORDER BY transaction_index DESC;;"))
+
+
+
+def test_query_SQL_comment_symbol():
+    fp = "config/settings.json"
+    block_db_sql_wrapper = BlockDBSQLWrapper(file_path=fp)
+    with pytest.raises(AssertionError):
+        print(block_db_sql_wrapper.query("SELECT * FROM transactions WHERE from_address='0x804d39f546c5164af7612c3dca3683150e55bb78' ORDER BY transaction_index DESC; --"))
+
+
 def test_list_tables():
     fp = os.getenv("COMP_SETTING")
     bdb = BlockDBSQLWrapper(file_path=fp)
